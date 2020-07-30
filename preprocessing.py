@@ -22,18 +22,22 @@ class SplitTweetCorpus():
         
     """
     def __init__(self, tweet_csv):
-        self.tweet_cvs = tweet_csv
+        self.tweet_csv = tweet_csv
         self.tweet_data = []
     
     def _read_csv(self):
         """Method that reads tweet.csv and extracts relevant data"""
-        with open(self.tweet_csv,"r") as tweetcorp:
-            csv_reader = csv.reader(tweetcorp, delimiter = ",")
-            for column in csv_reader:
-                if column[3] == "False":
-                # only want true tweets, no retweets
-                    self.tweet_data.append((column[1], column[2]))
-    
+        try:
+            with open(self.tweet_csv,"r") as tweetcorp:
+                csv_reader = csv.reader(tweetcorp, delimiter = ",")
+                for column in csv_reader:
+                    if column[3] == "False":
+                    # only want true tweets, no retweets
+                        self.tweet_data.append((column[1], column[2]))
+        except FileNotFoundError:
+            # Durch logging ersetzen
+            print("Datei nicht gefunden")
+            
     def split_corpus(self):
         """Method that splits the corpus into 3 parts of 70/20/10 
            (train/test/validation).
@@ -53,16 +57,18 @@ class SplitTweetCorpus():
         
     def _write_to_csv(self, data_list, filename):
         """Method that writes a data list into a csv."""
-        with open(filename, mode = "w") as subset_file:
-            subset_writer = csv.writer(subset_file, delimiter = ",", 
-                                         quotechar = '"', 
-                                         quoting = csv.QUOTE_MINIMAL)
-            for data_tuple in data_list:
-                subset_writer.writerow([data_tuple[0], data_tuple[1]])
-    
+        try:
+            with open(filename, mode = "w") as subset_file:
+                subset_writer = csv.writer(subset_file, delimiter = ",", 
+                                             quotechar = '"', 
+                                             quoting = csv.QUOTE_MINIMAL)
+                for data_tuple in data_list:
+                    subset_writer.writerow([data_tuple[0], data_tuple[1]])
+        except FileNotFoundError:
+            print("Datei nicht gefunden")
 
             
-                
+           
 if __name__ == "__main__":
     stc = SplitTweetCorpus("tweets.csv")
     stc.split_corpus()
