@@ -44,7 +44,7 @@ class SplitTweetCorpus():
         
           Args: 
               None
-          Return: 
+          Returns: 
               None
               
         """
