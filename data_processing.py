@@ -356,9 +356,3 @@ class ProcessData():
                 
                 
         
-        
-if __name__ == "__main__":
-    pcd = ProcessData("train_set.csv")
-    print("in process")
-    pcd.process_data()
-    # print(pcd.process_data("DonaldTrump"))

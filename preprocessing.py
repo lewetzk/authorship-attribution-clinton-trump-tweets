@@ -70,7 +70,3 @@ class SplitTweetCorpus():
             logging.error("File not found")
 
             
-           
-if __name__ == "__main__":
-    stc = SplitTweetCorpus("tweets.csv")
-    stc.split_corpus()
