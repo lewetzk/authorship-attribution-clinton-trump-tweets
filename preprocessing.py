@@ -8,7 +8,9 @@ Created on Sat Jul 25 11:17:46 2020
 
 import csv
 from sklearn.model_selection import train_test_split
+import logging
 
+logging.basicConfig(filename = 'processing.log', level = logging.DEBUG)
 
 class SplitTweetCorpus():
     """Class that splits the Hillary-Trump-Twitter-Corpus into three parts
@@ -36,7 +38,7 @@ class SplitTweetCorpus():
                         self.tweet_data.append((column[1], column[2]))
         except FileNotFoundError:
             # Durch logging ersetzen
-            print("Datei nicht gefunden")
+            logging.error("File not found")
             
     def split_corpus(self):
         """Method that splits the corpus into 3 parts of 70/20/10 
@@ -65,7 +67,7 @@ class SplitTweetCorpus():
                 for data_tuple in data_list:
                     subset_writer.writerow([data_tuple[0], data_tuple[1]])
         except FileNotFoundError:
-            print("Datei nicht gefunden")
+            logging.error("File not found")
 
             
            
