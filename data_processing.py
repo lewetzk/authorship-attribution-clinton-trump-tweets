@@ -26,7 +26,8 @@ class ProcessData():
         
     """
     
-    def __init__(self, train):
+    def __init__(self, train, is_test):
+        self.is_test = is_test
         self.train = train
         # train set
         self.data_dict = {"HillaryClinton" : [], "DonaldTrump" : []}
@@ -47,6 +48,9 @@ class ProcessData():
                                           "norm_!" : [], "norm_." : [], 
                                           "norm_?" : [],  "norm_," : [],    
                                           "av_w_len" : []}}
+        self.test_stats = []
+        self.test_tweets = []
+        self.test_authors = []
         # dict that stores certain statistics for all tweets
         self.mean_stats_H = ["HillaryClinton"]
         self.mean_stats_D = ["DonaldTrump"]
@@ -58,10 +62,13 @@ class ProcessData():
         # 3 : number of lowercase letters,
         # 4 : average number of sentences per tweet,
         # 5 : average number of ! per tweet,
-        # 6 : average number of ! per tweet,
-        # 7 : average number of ! per tweet,
-        # 8 : average number of ! per tweet,   
+        # 6 : average number of . per tweet,
+        # 7 : average number of ? per tweet,
+        # 8 : average number of , per tweet,   
         # 9 : average word length
+        self.bad_indices = []
+        # In rare cases, a tweet is only a link, which is removed by a regex
+        # later. Used for later processing to avoid index errors
 
 
     def process_data(self):
@@ -79,7 +86,8 @@ class ProcessData():
         for author in ["DonaldTrump", "HillaryClinton"]:
             self._read_data(self.train)
             segments = self._segment_sentences(self.data_dict[author])
-            self.ling_inf_dict[author].append(self._extract_linguistic_inf(segments))  
+            self.ling_inf_dict[author].append(
+                                        self._extract_linguistic_inf(segments))  
             self.sen_dict[author].append(segments)  
             self._get_mean_stats(author) 
         self._write_to_csv([self.mean_stats_H, self.mean_stats_D], "stats.csv")
@@ -101,10 +109,14 @@ class ProcessData():
             with open(csv_file,"r") as data_file:
                 csv_reader = csv.reader(data_file, delimiter = ",")
                 for column in csv_reader:
-                    if column[0] == "HillaryClinton":
-                        self.data_dict["HillaryClinton"].append(column[1])
+                    if self.is_test == False:
+                        if column[0] == "HillaryClinton":
+                            self.data_dict["HillaryClinton"].append(column[1])
+                        else:
+                            self.data_dict["DonaldTrump"].append(column[1])  
                     else:
-                        self.data_dict["DonaldTrump"].append(column[1])      
+                        self.test_tweets.append(column[1])
+                        self.test_authors.append(column[0])
         except FileNotFoundError:
             print("Datei nicht gefunden")
             
@@ -124,8 +136,8 @@ class ProcessData():
         nlp = spacy.load("en_core_web_sm")
         sent_list = []
         # list of sentences (as split by spacy)
-        for tweet in raw_tweet_list:
-            doc = nlp(tweet)
+        for raw_tweet in raw_tweet_list:
+            doc = nlp(raw_tweet)
             tweet_sents = []
             for sent in doc.sents:
                 tweet_sents.append(sent.text)
@@ -209,19 +221,25 @@ class ProcessData():
                 self.stats[author]["upper"].append(stat_list[0])
                 self.stats[author]["lower"].append(stat_list[1])
                 self.stats[author]["sen_nums"].append(len(seg_tweet))
-            self.stats[author]["av_w_len"] = self._get_av_word_len(author)
-            self.stats[author]["norm_!"] = self._count_punctuation("!", author)
-            self.stats[author]["norm_?"] = self._count_punctuation("?", author)
-            self.stats[author]["norm_."] = self._count_punctuation(".", author)
-            self.stats[author]["norm_,"] = self._count_punctuation(",", author)
+            self.stats[author]["av_w_len"] = self._get_av_word_len(
+                                                 self.ling_inf_dict[author][0])
+            self.stats[author]["norm_!"] = self._count_punctuation("!", 
+                                                      self.sen_dict[author][0])
+            self.stats[author]["norm_?"] = self._count_punctuation("?", 
+                                                      self.sen_dict[author][0])
+            self.stats[author]["norm_."] = self._count_punctuation(".", 
+                                                      self.sen_dict[author][0])
+            self.stats[author]["norm_,"] = self._count_punctuation(",", 
+                                                      self.sen_dict[author][0])
         except IndexError:
             logging.error("IndexError: self.sen_dict values might be empty.")
             
-    def _get_av_word_len(self, author):
+    def _get_av_word_len(self, tagged_tweets):
         """Method that calculates the average word length per tweet.""
            
            Args:
-               author (str) : Either HillaryClinton or DonaldTrump
+               tagged_tweets (list) : A list that contains three-valued tuples
+                                      (text, tag, lemma)
         
            Returns:
                 av_word_len_all (list) : list of ints representing the average
@@ -232,7 +250,7 @@ class ProcessData():
         punct_list = [".", "!", ",", "?", "”", "-", "–", "'", '"', ":", "#", 
                       "..."]
         av_word_len_all = []
-        for tweet_segs in self.ling_inf_dict[author][0]:
+        for tweet_segs in tagged_tweets:
             if tweet_segs != [[]]:
                 # due to some unclean data list containing empty list sneaks in
                 # as a seg around 2 times: Ignore it to avoid zero division
@@ -250,13 +268,13 @@ class ProcessData():
         return av_word_len_all
 
     
-    def _count_punctuation(self, punct, author):
-        """Method that calculates the normalized amount of a certain punctuation char
-           per tweet.""
+    def _count_punctuation(self, punct, segmented_tweets):
+        """Method that calculates the normalized amount of a certain 
+           punctuation char per tweet.""
            
            Args:
                punct (str) : A punctuation character
-               author (str) : Either HillaryClinton or DonaldTrump
+               segmented_tweets (str) : List of segmented tweets
         
            Returns:
                 total_punct (list) : List of ints representing the normalized
@@ -264,7 +282,10 @@ class ProcessData():
         """
         try:
             total_punct = []
-            for seg_tweet in self.sen_dict[author][0]:
+            for seg_tweet in segmented_tweets:
+                if seg_tweet == ['']:
+                    if self.is_test == True:
+                        self.bad_indices.append(segmented_tweets.index(seg_tweet))
                 if seg_tweet != ['']:
                     # empty string might sneak in: avoid
                     punct_amount = 0
@@ -290,6 +311,7 @@ class ProcessData():
            
            Args:
                seg_tweet (list) : A segmented tweet.
+               
            Returns:
                [sum(upper_nums),
                 sum(lower_nums),
@@ -344,9 +366,9 @@ class ProcessData():
                     # 3 : number of lowercase letters,
                     # 4 : average number of sentences per tweet,
                     # 5 : average number of ! per tweet,
-                    # 6 : average number of ! per tweet,
-                    # 7 : average number of ! per tweet,
-                    # 8 : average number of ! per tweet,   
+                    # 6 : average number of . per tweet,
+                    # 7 : average number of ? per tweet,
+                    # 8 : average number of , per tweet,   
                     # 9 : average word length
         except FileNotFoundError:
             logging.error("File not found")
