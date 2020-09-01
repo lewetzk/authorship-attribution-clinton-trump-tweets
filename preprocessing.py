@@ -26,7 +26,7 @@ class SplitTweetCorpus():
     def __init__(self, tweet_csv):
         self.tweet_csv = tweet_csv
         self.tweet_data = []
-    
+
     def _read_csv(self):
         """Method that reads tweet.csv and extracts relevant data"""
         try:
@@ -51,7 +51,7 @@ class SplitTweetCorpus():
               
         """
         self._read_csv()
-        train, test_val = train_test_split(self.tweet_data, test_size = 0.3)
+        train, test_val = train_test_split(self.tweet_data, test_size = 0.33333)
         test, val = train_test_split(test_val, test_size = 0.333333)
         self._write_to_csv(train, "train_set.csv")
         self._write_to_csv(test, "test_set.csv")        

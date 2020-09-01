@@ -20,7 +20,9 @@ class ProcessData():
     
     Args:
         train (str) : CSV file containing the train set
-        
+        is_test (bool) : boolean value whether or not the csv that is going 
+                         to be analyzed is either the test set (True) or the
+                         train set (False)
     Returns:
         None
         
@@ -48,10 +50,13 @@ class ProcessData():
                                           "norm_!" : [], "norm_." : [], 
                                           "norm_?" : [],  "norm_," : [],    
                                           "av_w_len" : []}}
-        self.test_stats = []
-        self.test_tweets = []
-        self.test_authors = []
         # dict that stores certain statistics for all tweets
+        self.test_stats = []
+        # stats for test instances
+        self.test_tweets = []
+        # raw tweets of a test set
+        self.test_authors = []
+        # author of the test tweets (match up by indices)
         self.mean_stats_H = ["HillaryClinton"]
         self.mean_stats_D = ["DonaldTrump"]
         # lists for both authors containing the mean value of each 
@@ -67,8 +72,9 @@ class ProcessData():
         # 8 : average number of , per tweet,   
         # 9 : average word length
         self.bad_indices = []
-        # In rare cases, a tweet is only a link, which is removed by a regex
-        # later. Used for later processing to avoid index errors
+        # In rare cases, a tweet is only a link, which is removed by a regex,
+        # leading to problems down the line.
+        # Used for later processing to avoid index errors
 
 
     def process_data(self):
@@ -283,9 +289,6 @@ class ProcessData():
         try:
             total_punct = []
             for seg_tweet in segmented_tweets:
-                if seg_tweet == ['']:
-                    if self.is_test == True:
-                        self.bad_indices.append(segmented_tweets.index(seg_tweet))
                 if seg_tweet != ['']:
                     # empty string might sneak in: avoid
                     punct_amount = 0

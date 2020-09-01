@@ -20,7 +20,7 @@ if __name__ == "__main__":
     pcd.process_data()
     print("Aggregated features exported as csv.")
     fa = FeatureAnalysis("stats.csv", "train_set.csv", True)
- 
+    fa.classify_tweet("train_set.csv")
     # fa.test_tweets
     # fa._get_test_stats()
     
