@@ -20,7 +20,12 @@ The requirements can be found in the requirements.txt.
 HOW TO USE
 1) Download the Hillary Clinton and Donald Trump Tweet corpus from kaggle.
 2) Place it in the root directory of the project.
-3) Install the dependencies with the following command: python -m pip install -r requirements.txt
+3) Install the dependencies with the following command: 
+      Windows:
+      python -m pip install -r requirements.txt
+      
+      Linux & MacOS:
+      python3 -m pip install -r requirements.txt
 4) Install spacy's pretrained statistic model: python -m spacy download en_core_web_sm
 5) Run the following command in your terminal: python main.py
 
