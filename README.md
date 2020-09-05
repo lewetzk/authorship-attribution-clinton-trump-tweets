@@ -16,6 +16,7 @@ REQUIREMENTS
 The requirements can be found in the requirements.txt.
 
 
+
 HOW TO USE
 1) Download the Hillary Clinton and Donald Trump Tweet corpus from kaggle.
 2) Place it in the root directory of the project.
