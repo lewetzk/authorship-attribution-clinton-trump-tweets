@@ -208,7 +208,8 @@ class ProcessData():
                 if author == "DonaldTrump":
                     self.mean_stats_D.append(statistics.mean(value))
         except TypeError:
-            logging.error("TypeError : Dict values might be empty (NoneType).")
+            raise TypeError
+            logging.error("Dict values might be empty (NoneType).")
                 
     def _count_sen_stats(self, author):
         """Method that calculates linguistic features and deposits them in the
@@ -239,6 +240,7 @@ class ProcessData():
             self.stats[author]["norm_,"] = self._count_punctuation(",", 
                                                       self.sen_dict[author][0])
         except IndexError:
+            raise IndexError
             logging.error("self.sen_dict or values might be empty.")
             
     def _get_av_word_len(self, tagged_tweets):
