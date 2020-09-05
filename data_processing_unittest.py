@@ -7,11 +7,13 @@ Created on Fri Sep  4 19:18:05 2020
 """
 
 import unittest
+import os
 from source.data_processing import ProcessData
 
 class DataProcessingTestMethods(unittest.TestCase):
     def setUp(self):
-        self.dataproc = ProcessData("train_set.csv", False)
+        self.dataproc = ProcessData(os.path.join("csvs","train_set.csv"),
+                                                 False)
         self.tweet_list = ["Trump wants to be our Commander-in-Chief. Here's how "
                       "he's treated veterans thus far: "+
                       "https://t.co/iquFJ676Rj"]
@@ -44,11 +46,17 @@ class DataProcessingTestMethods(unittest.TestCase):
         for num in self.dataproc._get_av_word_len(ling_inf_tweet):
             self.assertTrue(type(num) == int)
             
-    def test_if_count_sen_stats_adds_punct_to_self_stats(self):
+    def test_if_indexerror_raised_in_count_sen_stats(self):
         self.dataproc.sen_dict["DonaldTrump"] = [["Trump wants to be our" + 
                                                  "Commander-in-Chief."]]
         with self.assertRaises(IndexError):
             self.dataproc._count_sen_stats("DonaldTrump")
+    
+    def test_if_count_sen_stats_fills_out_punct_in_stats_dict(self):
+        self.dataproc.sen_dict["DonaldTrump"] = [["Trump wants to be our" + 
+                                                 "Commander-in-Chief."]]
+        ling_inf = self.dataproc._extract_linguistic_inf(self.tweet_list)
+        self.dataproc.
        
         
         

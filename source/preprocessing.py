@@ -64,6 +64,8 @@ class SplitTweetCorpus():
         self._read_csv()
         train, test_val = train_test_split(self.tweet_data, test_size = 0.3)
         test, val = train_test_split(test_val, test_size = 0.333333)
+        if not os.path.isdir("csvs"):
+            os.mkdir("csvs")
         self._write_to_csv(train, os.path.join("csvs", "train_set.csv"))
         self._write_to_csv(test, os.path.join("csvs", "test_set.csv"))        
         self._write_to_csv(val, os.path.join("csvs", "val_set.csv"))          
@@ -84,6 +86,7 @@ class SplitTweetCorpus():
                                        quoting = csv.QUOTE_MINIMAL)
             for data_tuple in data_list:
                 subset_writer.writerow([data_tuple[0], data_tuple[1]])
+                
 
 
             

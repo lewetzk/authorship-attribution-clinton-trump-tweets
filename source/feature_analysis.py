@@ -19,7 +19,7 @@ class FeatureAnalysis(ProcessData):
        features as the train set. By calculating the minimal distance 
        between a tweet vector and both models, it can be decided which author
        is most likely. 
-    
+    csv
     Args:
         train (str) : CSV file containing the train set
         is_test (bool) : boolean value whether or not the csv that is going 
@@ -69,11 +69,16 @@ class FeatureAnalysis(ProcessData):
         
         """
         self._read_data(test_csv)
+        # read data from test_set.csv
         self._read_agg_stats_csv()
+        # read models from stats.csv
         self._get_test_stats()
+        # get all stats from the test set
         self.classified_tweets = self._calc_likely_author()
+        # classify the tweets with the most likely author
         self._write_results_csv(self.classified_tweets, 
                                 os.path.join("csvs", "results.csv"))
+        # write results to csv
     
     def _read_agg_stats_csv(self):
         """Method that extracts data from the stats CSV and saves the
@@ -92,7 +97,7 @@ class FeatureAnalysis(ProcessData):
         with open(self.stats_csv, "r", encoding = "utf-8") as stats_file:
             csv_reader = csv.reader(stats_file, delimiter = ",")
             for line in csv_reader:
-                if line != '':
+                if line:
                     if line[0] == "HillaryClinton":
                         self.H_stats = line
                     else:
@@ -162,6 +167,7 @@ class FeatureAnalysis(ProcessData):
                 classified_tweets.append([stat_tuple[0], "HillaryClinton"])
             elif distance_D == distance_H: 
                 classified_tweets.append([stat_tuple[0], "unclear"])
+                # very unlikely case but still good to have
         return classified_tweets
     
     def _write_results_csv(self, classified_tweets, filename):
@@ -170,10 +176,12 @@ class FeatureAnalysis(ProcessData):
                                      quotechar = '"', 
                                      quoting = csv.QUOTE_MINIMAL) 
             for i in range(len(classified_tweets)):
+                # First row: tweet, second row: suspected author, third row:
+                # actual author
                 result_writer.writerow([classified_tweets[i][0], 
                                        classified_tweets[i][1],
                                        self.test_authors[i]])
-            result_writer.writerow([self._get_accuracy(classified_tweets)])
+
 
         
     
