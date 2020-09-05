@@ -10,9 +10,11 @@ For the extraction of said linguistic features, spacy is used. The features are 
 The project uses the "Hillary Clinton and Donald Trump Tweets"  corpus, containing around 6400 tweets from both politicians, mainly from the 2016 election.
 The corpus can be found here: https://www.kaggle.com/benhamner/clinton-trump-tweets.
 
+
 REQUIREMENTS
 
 The requirements can be found in the requirements.txt.
+
 
 HOW TO USE
 
@@ -24,6 +26,7 @@ HOW TO USE
 
 The classified tweets are stored in the csvs directory under results.csv with each column containing the raw tweet, the suspected author and the actual author. The accuracy is displayed in the terminal after finishing.
 Runtime may vary on hardware. It is generally around 2-3 minutes. Information about which step is currently being completed will be shown.
+
 
 INFO:
 
