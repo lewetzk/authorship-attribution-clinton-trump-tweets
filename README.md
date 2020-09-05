@@ -26,7 +26,4 @@ Runtime may vary on hardware. It is generally around 2-3 minutes. Information ab
 
 
 INFO:
-Lea Wetzke
-797451
-PRO-2 SoSe 2020
-lwetzke@uni-potsdam.de
+Lea Wetzke / 797451 / PRO-2 SoSe 2020 / lwetzke@uni-potsdam.de
