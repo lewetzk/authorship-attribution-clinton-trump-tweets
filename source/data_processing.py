@@ -5,6 +5,11 @@ Created on Wed Jul 29 12:55:49 2020
 
 @author: lea
 """
+# Lea Wetzke
+# lwetzke@uni-potsdam.de
+# Universität Potsdam
+# Bachelor Computerlinguistik
+
 
 import spacy
 import csv
@@ -13,44 +18,45 @@ import statistics
 import logging
 import os
 
-logging.basicConfig(filename = 'errors.log', level = logging.DEBUG)
+logging.basicConfig(filename='errors.log', level=logging.DEBUG)
+
 
 class ProcessData():
-    """Class that processes the train CSV and extracts relevant statistics, 
+    """Class that processes the train CSV and extracts relevant statistics,
        storing the mean values of the features in a CSV.
-    
+
     Args:
         train (str) : CSV file containing the train set
-        is_test (bool) : boolean value whether or not the csv that is going 
+        is_test (bool) : boolean value whether or not the csv that is going
                          to be analyzed is either the test set (True) or the
                          train set (False)
     Returns:
         None
-        
+
     """
-    
+
     def __init__(self, train, is_test):
         self.is_test = is_test
         self.train = train
         # train set
-        self.data_dict = {"HillaryClinton" : [], "DonaldTrump" : []}
+        self.data_dict = {"HillaryClinton": [], "DonaldTrump": []}
         # dict that saves the raw tweet in a list as the value of an
         # author
-        self.ling_inf_dict = {"HillaryClinton" : [], "DonaldTrump" : []}
+        self.ling_inf_dict = {"HillaryClinton": [], "DonaldTrump": []}
         # dict that saves linguistic information (text, tag, lemma) of a
         # sentence in a nested list
-        self.sen_dict = {"HillaryClinton" : [], "DonaldTrump" : []}
+        self.sen_dict = {"HillaryClinton": [], "DonaldTrump": []}
         # dict that saves the split sentences of a tweet
-        self.stats = {"HillaryClinton" : {"char" : [], "upper" : [], 
-                                          "lower" : [], "sen_nums" : [],
-                                          "norm_!" : [], "norm_." : [], 
-                                          "norm_?" : [],  "norm_," : [],    
-                                          "av_w_len" : []},
-                      "DonaldTrump" : {"char" : [], "upper" : [], 
-                                          "lower" : [], "sen_nums" : [],
-                                          "norm_!" : [], "norm_." : [], 
-                                          "norm_?" : [],  "norm_," : [],    
-                                          "av_w_len" : []}}
+        self.stats = {"HillaryClinton": {"char": [], "upper": [],
+                                         "lower": [], "sen_nums": [],
+                                         "norm_!": [], "norm_.": [],
+                                         "norm_?": [],  "norm_,": [],
+                                         "av_w_len": []},
+                      "DonaldTrump": {"char": [], "upper": [],
+                                      "lower": [], "sen_nums": [],
+                                      "norm_!": [], "norm_.": [],
+                                      "norm_?": [],  "norm_,": [],
+                                      "av_w_len": []}}
         # dict that stores certain statistics for all tweets in the train set
         self.test_stats = []
         # stats for test instances
@@ -60,86 +66,81 @@ class ProcessData():
         # author of the test tweets (match up by indices)
         self.mean_stats_H = ["HillaryClinton"]
         self.mean_stats_D = ["DonaldTrump"]
-        # lists for both authors containing the mean value of each 
+        # lists for both authors containing the mean value of each
         # feature (for exporting to csv)
         # indices:
-        # 0 : author, 
+        # 0 : author,
         # 1 : Number of chars, 2 : number of uppercase letters,
         # 3 : number of lowercase letters,
         # 4 : average number of sentences per tweet,
         # 5 : average number of ! per tweet,
         # 6 : average number of . per tweet,
         # 7 : average number of ? per tweet,
-        # 8 : average number of , per tweet,   
+        # 8 : average number of , per tweet,
         # 9 : average word length
-
-
 
     def process_data(self):
         """Method that processes the tweet data by applying various linguistc
            methods and calculating certain statistics which are exported
            to a csv.
-           
+
            Args:
                None
-        
+
            Returns:
                None
-        
+
         """
         for author in ["DonaldTrump", "HillaryClinton"]:
             self._read_data(self.train)
             segments = self._segment_sentences(self.data_dict[author])
             self.ling_inf_dict[author].append(
-                                        self._extract_linguistic_inf(segments))  
-            self.sen_dict[author].append(segments)  
-            self._get_mean_stats(author) 
-        self._write_to_csv([self.mean_stats_H, self.mean_stats_D], 
+                self._extract_linguistic_inf(segments))
+            self.sen_dict[author].append(segments)
+            self._get_mean_stats(author)
+        self._write_to_csv([self.mean_stats_H, self.mean_stats_D],
                            os.path.join("csvs", "stats.csv"))
-        
-   
-        
+
     def _read_data(self, csv_file):
         """Method that extracts data from the train CSV and saves the raw
            tweets in self.data_dict.
            Args:
                train (str) : CSV file containing the train set
-        
+
            Returns:
                None
-        
+
         """
         if not os.path.isfile(csv_file):
-             raise FileNotFoundError
-             logging.error("{} was not found.".format(csv_file))
-        with open(csv_file, "r", encoding = "utf-8") as data_file:
-            csv_reader = csv.reader(data_file, delimiter = ",")
+            raise FileNotFoundError
+            logging.error("{} was not found.".format(csv_file))
+        with open(csv_file, "r", encoding="utf-8") as data_file:
+            csv_reader = csv.reader(data_file, delimiter=",")
             for column in csv_reader:
                 if column != '\n':
                     if self.is_test == False:
                         if column[0] == "HillaryClinton":
                             self.data_dict["HillaryClinton"].append(
-                                                                     column[1])
+                                column[1])
                         else:
-                            self.data_dict["DonaldTrump"].append(column[1])  
+                            self.data_dict["DonaldTrump"].append(column[1])
                     else:
                         self.test_tweets.append(column[1])
                         self.test_authors.append(column[0])
 
-            
     def _segment_sentences(self, raw_tweet_list):
-        """Method that segments a list of raw tweets into a nested list 
+        """Method that segments a list of raw tweets into a nested list
            Containing cleaned sentences with links removed.
-           
+
            Args:
                raw_tweet_list (list) : List containing raw tweets as strings
-        
+
            Returns:
                cleaned_tweets (list) : List of lists containing sentences of
                                        a tweet
-         
+
         """
-        
+
         nlp = spacy.load("en_core_web_sm")
         sent_list = []
         # list of sentences (as split by spacy)
@@ -155,7 +156,7 @@ class ProcessData():
             tweet_segs = []
             # list of segments in one tweet
             for seg in tweet:
-            # sometimes spacy sentence segmenter treats link as sentence
+                # sometimes spacy sentence segmenter treats link as sentence
                 clean_seg = re.sub(r'http\S+', "", seg).rstrip("\n")
                 # regex that looks for links in strings and subs them with
                 # empty string
@@ -164,17 +165,17 @@ class ProcessData():
                 tweet_segs.append(clean_seg)
             cleaned_tweets.append(tweet_segs)
         return cleaned_tweets
-    
+
     def _extract_linguistic_inf(self, tweets_segmented):
         """Method that extracts linguistic information (text, tag, lemma) from
            a segmented tweet and returns it.""
-           
+
            Args:
                tweets_segmented (list) : List containing segmented tweets
-        
+
            Returns:
-                ling_inf_list (list) : list of three valued tuples 
-         
+                ling_inf_list (list) : list of three valued tuples
+
         """
         nlp = spacy.load("en_core_web_sm")
         ling_inf_list = []
@@ -187,18 +188,18 @@ class ProcessData():
                     seg_tokens.append((token.text, token.tag_, token.lemma_))
                 inf_tuples.append(seg_tokens)
             ling_inf_list.append(inf_tuples)
-        return ling_inf_list 
-       
+        return ling_inf_list
+
     def _get_mean_stats(self, author):
         """Method that extracts the mean value of all features in a feature
            dict of an author.
-           
+
            Args:
                author (str) : Either HillaryClinton or DonaldTrump
-        
+
            Returns:
                None
-         
+
         """
         try:
             self._count_sen_stats(author)
@@ -210,17 +211,17 @@ class ProcessData():
         except TypeError:
             raise TypeError
             logging.error("Dict values might be empty (NoneType).")
-                
+
     def _count_sen_stats(self, author):
         """Method that calculates linguistic features and deposits them in the
            feature dict.
-           
+
            Args:
                author (str) : Either HillaryClinton or DonaldTrump
-        
+
            Returns:
                None
-         
+
         """
         try:
             for seg_tweet in self.sen_dict[author][0]:
@@ -230,61 +231,60 @@ class ProcessData():
                 self.stats[author]["lower"].append(stat_list[1])
                 self.stats[author]["sen_nums"].append(len(seg_tweet))
             self.stats[author]["av_w_len"] = self._get_av_word_len(
-                                                 self.ling_inf_dict[author][0])
-            self.stats[author]["norm_!"] = self._count_punctuation("!", 
-                                                      self.sen_dict[author][0])
-            self.stats[author]["norm_?"] = self._count_punctuation("?", 
-                                                      self.sen_dict[author][0])
-            self.stats[author]["norm_."] = self._count_punctuation(".", 
-                                                      self.sen_dict[author][0])
-            self.stats[author]["norm_,"] = self._count_punctuation(",", 
-                                                      self.sen_dict[author][0])
+                self.ling_inf_dict[author][0])
+            self.stats[author]["norm_!"] = self._count_punctuation("!",
+                                           self.sen_dict[author][0])
+            self.stats[author]["norm_?"] = self._count_punctuation("?",
+                                           self.sen_dict[author][0])
+            self.stats[author]["norm_."] = self._count_punctuation(".",
+                                           self.sen_dict[author][0])
+            self.stats[author]["norm_,"] = self._count_punctuation(",",
+                                           self.sen_dict[author][0])
         except IndexError:
             raise IndexError
             logging.error("self.sen_dict or values might be empty.")
-            
+
     def _get_av_word_len(self, tagged_tweets):
         """Method that calculates the average word length per tweet.""
-           
+
            Args:
                tagged_tweets (list) : A list that contains three-valued tuples
                                       (text, tag, lemma)
-        
+
            Returns:
                 av_word_len_all (list) : list of ints representing the average
                                          word length per tweet
-         
+
         """
-        
-        punct_list = {".", "!", ",", "?", "”", "-", "–", "'", '"', ":", "#", 
+
+        punct_list = {".", "!", ",", "?", "”", "-", "–", "'", '"', ":", "#",
                       "...", ";", "+", "*", "/"}
         av_word_len_all = []
         for tweet_segs in tagged_tweets:
             if tweet_segs != [[]]:
-                # due to some unclean data list containing empty list sneaks in
-                # as a seg around 2 times: Ignore it to avoid zero division
+                # due to some unclean data list empty list sneaks in
+                # Ignore it to avoid zero division
                 av_word_lens = []
                 for sen in tweet_segs:
                     if sen != '':
                         # Same for empty string as segment: also ignored
                         for inf_tuple in sen:
-                           if inf_tuple[0] not in punct_list:
-                               # If word not punctuation: consider as candidate
-                               # for word length
-                               av_word_lens.append(len(inf_tuple[0]))
+                            if inf_tuple[0] not in punct_list:
+                                # If word not punctuation: consider as candidate
+                                # for word length
+                                av_word_lens.append(len(inf_tuple[0]))
                 av_word_len_all.append(statistics.mean(av_word_lens))
                 # get mean word length per tweet
         return av_word_len_all
 
-    
     def _count_punctuation(self, punct, segmented_tweets):
-        """Method that calculates the normalized amount of a certain 
+        """Method that calculates the normalized amount of a certain
            punctuation char per tweet.""
-           
+
            Args:
                punct (str) : A punctuation character
                segmented_tweets (str) : List of segmented tweets
-        
+
            Returns:
                 total_punct (list) : List of ints representing the normalized
                                      amount of the character per tweet
@@ -307,17 +307,13 @@ class ProcessData():
                 # normalize amount of punct by tweet
         return total_punct
 
-                                                    
-                                        
-        
-                    
     def _count_lower_upper_case(self, seg_tweet):
         """Method that calculates the normalized amount of upper- and lowercase
            letters and the relative amount of chars per tweet.""
-           
+
            Args:
                seg_tweet (list) : A segmented tweet
-               
+
            Returns:
                [sum(upper_nums),
                 sum(lower_nums),
@@ -333,46 +329,39 @@ class ProcessData():
             if sen != '':
                 char_lens.append(len(sen))
                 lower_nums.append(sum(map(str.islower, sen))/len(sen))
-                # Normalize: divide sum of lower and upper letters by 
+                # Normalize: divide sum of lower and upper letters by
                 # length of the sentence
                 upper_nums.append(sum(map(str.isupper, sen))/len(sen))
         return [sum(upper_nums),
                 sum(lower_nums),
                 sum(char_lens)]
-        
+
     def _write_to_csv(self, stat_lists, filename):
         """Method that writes a data list into a csv.
            Args:
                stat_list (list) : List of statistics of features
                filename (str) : Name of the file
-        
+
            Returns:
                 None
-                
+
         """
-        with open(filename, mode = "w", encoding = "utf-8") as stat_file:
-            stat_writer = csv.writer(stat_file, delimiter = ",", 
-                                     quotechar = '"', 
-                                     quoting = csv.QUOTE_MINIMAL)
+        with open(filename, mode="w", encoding="utf-8") as stat_file:
+            stat_writer = csv.writer(stat_file, delimiter=",",
+                                     quotechar='"',
+                                     quoting=csv.QUOTE_MINIMAL)
             for stat_list in stat_lists:
                 stat_writer.writerow([stat_list[0], stat_list[1],
                                       stat_list[2], stat_list[3],
                                       stat_list[4], stat_list[5],
                                       stat_list[6], stat_list[7],
                                       stat_list[8], stat_list[9]])
-                    # 0 : author, 
-                    # 1 : Number of chars, 2 : number of uppercase letters,
-                    # 3 : number of lowercase letters,
-                    # 4 : average number of sentences per tweet,
-                    # 5 : average number of ! per tweet,
-                    # 6 : average number of . per tweet,
-                    # 7 : average number of ? per tweet,
-                    # 8 : average number of , per tweet,   
-                    # 9 : average word length
-
-        
-                
-                
-                
-                
-        
+                # 0 : author,
+                # 1 : Number of chars, 2 : number of uppercase letters,
+                # 3 : number of lowercase letters,
+                # 4 : average number of sentences per tweet,
+                # 5 : average number of ! per tweet,
+                # 6 : average number of . per tweet,
+                # 7 : average number of ? per tweet,
+                # 8 : average number of , per tweet,
+                # 9 : average word length
