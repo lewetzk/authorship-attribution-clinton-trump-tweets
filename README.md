@@ -16,6 +16,7 @@ The requirements can be found in the requirements.txt.
 `python3 -m spacy download en_core_web_sm`
 5.  Run the following command in your terminal: 
 `python3 main.py`
+6. If desired, unit tests can also be run. 
 
 The classified tweets are stored in the csvs directory under results.csv with each column containing the raw tweet, the suspected author and the actual author. The accuracy is displayed in the terminal after finishing. Runtime may vary on hardware. It is generally around 2-3 minutes. Information about which step is currently being completed will be shown.
 
