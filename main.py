@@ -5,6 +5,10 @@ Created on Mon Aug 24 14:35:36 2020
 
 @author: lea
 """
+# Lea Wetzke
+# lwetzke@uni-potsdam.de
+# Universität Potsdam
+# Bachelor Computerlinguistik
 
 from source.preprocessing import SplitTweetCorpus
 from source.data_processing import ProcessData
