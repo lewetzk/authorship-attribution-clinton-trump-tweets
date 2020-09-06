@@ -34,7 +34,7 @@ def main():
     print("Aggregated features exported as stats.csv.")
     fa = FeatureAnalysis(os.path.join("csvs", "stats.csv"), train_path, True)
     print("Classifying test tweets...")
-    fa.classify_tweet(os.path.join("csvs", "val_set.csv"))
+    fa.classify_tweet(os.path.join("csvs", "test_set.csv"))
     print("Exported predictions and gold standard in a csv.")
     print(f"Accuracy: {fa._get_accuracy(fa.classified_tweets)}")
     
